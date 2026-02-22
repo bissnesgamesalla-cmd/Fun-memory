@@ -1,0 +1,701 @@
+/* Базовые настройки для всех режимов */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;  
+    position: fixed;
+    font-family: Arial, sans-serif;
+    background-color: #000 !important;  
+    user-select: none;
+    touch-action: manipulation;
+    overflow: hidden; /* Скрывает полосы прокрутки */
+    touch-action: none; /* Предотвращает зум и скролл жестами на мобилках */
+}
+
+/* Основной контейнер игры */
+#game-container {
+    display: none; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;  
+    height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
+    padding: 10px;
+}
+    
+/* Стили карточек (общие) */
+#game-board {
+    display: grid;
+    gap: 8px;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    flex-grow: 1;
+    transition: transform 0.5s, opacity 0.5s;
+}
+
+/* Масштабируем любые изображения-кнопки в главном меню */
+#main-menu-overlay img {
+    width: 10vw;       
+    height: 10vh;
+    /*max-width: 100px;*/ 
+    cursor: pointer;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+
+/* Если они внутри контейнера для аудио */
+.audio-controls {
+    display: flex;
+    justify-content: center;
+    gap: 2vw;
+    margin-bottom: 2vh;
+}
+
+/* Эффект нажатия */
+#main-menu-overlay img:active {
+    transform: scale(0.9);
+}
+
+/* Контейнер для кнопок уровней */
+#level-select-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 1.5vh; 
+    padding: 2vh;
+    justify-content: center;
+}
+
+
+/* Сами кнопки уровней */
+.level-btn {
+    width: 8vh; 
+    height: 8vh;
+    
+    background-color: #3498db;
+    color: white;
+    border: 0.4vh solid #2980b9;
+    border-radius: 1.5vh;
+
+    font-size: 3vh; 
+    font-weight: 900;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0.5vh 0 #2980b9;
+}
+
+/* Эффект при нажатии (тоже в vh) */
+.level-btn:active:not(.locked) {
+    transform: translateY(0.3vh);
+    box-shadow: 0 0.2vh 0 #2980b9;
+}
+
+/* Модальное окно (основа для уровней) */
+.modal-content {
+    width: auto;
+    min-width: 40vw; 
+    padding: 3vh;
+    border-radius: 3vh;
+}
+
+/* проверка */
+#game-board {
+    display: grid;
+    gap: 8px;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    flex-grow: 1;
+    /*transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;*/
+    /* Базовое состояние — поле на месте и полностью непрозрачно */
+    transform: translateX(0);
+    opacity: 1;
+    /* Плавность анимации (соответствует 500мс в вашем JS) */
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+    
+    /* Убедитесь, что родительский контейнер скрывает вылетающие карточки */
+    overflow: hidden;
+}
+
+
+/* Состояние ухода: поле уезжает влево и исчезает */
+.slide-out-left {
+    transform: translateX(-120%) !important;
+    opacity: 0 !important;
+}
+
+/* Состояние подготовки: поле МГНОВЕННО переносится вправо, пока оно невидимо */
+.slide-in-right {
+    transform: translateX(120%) !important;
+    opacity: 0 !important;
+    /* Отключаем транзишн, чтобы перенос вправо был мгновенным */
+    transition: none !important;
+}
+
+
+.card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    perspective: 1000px;
+    width: 100%;
+    /*aspect-ratio: 1 / 1.4;*/
+}
+
+.card-front, .card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card-front {
+    transform: rotateY(180deg);
+    z-index: 1;
+    background-color: #ffffff;
+}
+
+.card-back {
+    transform: rotateY(0deg);
+    z-index: 2;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ 
+.card.flipped, .card.matched {
+    transform: rotateY(180deg);
+}
+ 
+.card.matched.recently-matched {
+    animation: matchPulse 0.5s ease-out;
+}
+
+@keyframes matchPulse {
+    0% { transform: rotateY(180deg) scale(1);}
+    50% { transform: rotateY(180deg) scale(1.1);}
+    100% { transform: rotateY(180deg) scale(1);}
+} /* проверка */
+
+
+/* Стиль для окна побед и порожения */
+#win-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    min-width: 200px;
+    max-height: 100vh;
+    max-width: 100vw;
+    background: rgba(0, 0, 0, 0.50);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; 
+    color: #0fb0d4;
+    text-shadow:    
+            0 0.2vmin 0 #2980b9,
+            0 0.1vmin 0 #1a5276,
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+}
+  
+
+.modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    text-align: center;
+    max-width: 90%;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+
+.card-front { transform: rotateY(180deg); background: #fff; }
+.card-back { background-size: 100% 100%; }
+
+.card.flipped, .card.matched { transform: rotateY(180deg); }
+
+
+
+/* ПОРТРЕТНЫЙ РЕЖИМ (Mobile Portrait) */
+@media (orientation: portrait) {
+     
+    .title-container {
+        display: flex !important;
+        flex-direction: column !important; 
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 20px;
+         
+    }
+
+    #game-container { 
+        display: flex;
+        flex-direction: column;    
+        justify-content: center;   
+        align-items: center;       
+        min-height: 100vh;         
+        width: 100vw;
+    }
+
+    #game-conteiner_2 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .game-title-memory, .game-title-master {
+        font-size: 12vmin;  
+        display: block;   
+    }
+
+    .game-title-memory { 
+        font-size: 12vmin; 
+        text-align: center; 
+        color: #f1c40f; 
+        
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);          
+    }
+
+    .game-title-master { 
+        font-size: 12vmin; 
+        text-align: center; 
+        color: #3498db;
+        text-shadow: 
+        
+            0 0.2vmin 0 #2980b9,
+            0 0.1vmin 0 #1a5276,
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+    }
+
+     /* Внутри моштабируем */
+    #main-menu-overlay img {
+        width: 8vh !important; 
+        height: 8vh !important;
+    }
+
+     
+    #level-info {
+        display: none;
+        font-size: clamp(18px, 4vh, 28px);
+        font-weight: 900;
+        color: #3498db;
+        background: rgba(255, 255, 255, 0.9);
+        border: 3px solid #e74c3c;
+        border-radius: 12px;
+        padding: 5px 20px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    #menu-wrapper {
+        display: none;
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid #e74c3c;
+        border-radius: 10px;
+        padding: 5px 15px;
+        margin-bottom: 5px;
+    }
+
+    .timer-container {   
+        display: flex;   
+        align-items: center;   
+        justify-content: center;    
+        gap: 15px;    
+        position: relative;        
+        padding: 5px 40px; 
+    }
+
+    #home-btn {
+        position: absolute;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+     
+    #home-btn:active { transform: scale(0.9); }
+
+    #timer-display {
+        font-size: clamp(20px, 4vh, 32px);
+        font-weight: 900;
+        color: #3498db;
+        margin-left: 10px;
+    }
+
+
+
+ 
+    button {
+        /* Используем vmin для всего, чтобы кнопка сохраняла пропорции */
+        padding: 5vmin 10vmin; 
+        font-size: clamp(18px, 5vmin, 40px);
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+        border: 0.6vmin solid #e74c3c;
+        border-radius: 2vmin;
+        box-shadow: 0 1vmin 0 #c0392b;
+    
+        /* Ограничители, чтобы на огромных мониторах кнопка не стала гигантской */
+        max-width: 300px;
+        max-height: 100px;
+
+        cursor: pointer;
+        background-color: #3498db;
+        color: #f1c40f;
+        text-transform: uppercase;
+        transition: transform 0.1s ease;
+    }
+
+    button:active {
+        /* Эффект нажатия тоже через vmin */
+        transform: translateY(0.5vmin);
+        box-shadow: 0 0.4vmin 0 #c0392b;
+    }        
+    
+    
+}
+
+ /* ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (Mobile Landscape) */   
+@media (orientation: landscape) and (max-height: 450px) {
+    #game-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        
+    }
+    #game-conteiner_2 {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* БЛОК с заголовком */
+    .game-title-memory, .game-title-master { 
+        font-size: 20vmin;
+        margin: 10;  
+        position: relative;
+        top: 0;  
+    }
+
+    /* БЛОК с заголовком отвечает за стили текста */
+    .game-title-memory { 
+        color: #f1c40f;
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);  
+    }
+    
+    /* БЛОК с заголовком отвечает за стили текста */
+    .game-title-master { 
+        color: #3498db;
+        text-shadow: 
+            0 0.2vmin 0 #2980b9,
+            0 0.1vmin 0 #1a5276,
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    }
+
+    
+    /* Внутри landscape */
+    #main-menu-overlay img {
+        width: 15vh !important; 
+        height: 15vh !important;
+    }
+
+
+    /* БЛОК с информачией об уровне в игре*/
+    #level-info {
+        display: none;
+        font-size: 6vmin;
+        font-weight: 900;
+        color: #3498db;
+        background: rgba(255, 255, 255, 0.9);
+        border: 3px solid #e74c3c;
+        border-radius: 1vw;
+        min-width: 50px;
+        min-height: 20px;
+        width: 30vmin;
+        height: 10vmin;
+        padding: 5px 20px;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        
+    }
+
+    /* БЛОК с кнопкой домой в игре*/
+    #menu-wrapper {
+        display: none;
+        font-size: 6vmin;
+        font-weight: 900;
+        background: rgba(255, 255, 255, 0.9);
+        border: 3px solid #e74c3c;
+        border-radius: 1vw;
+        min-width: 50px;
+        min-height: 20px;
+        padding: 5px 20px;
+        margin-bottom: 5px;
+    }
+    
+    /* БЛОК с таймером в игре*/
+    .timer-container {   
+        display: flex; 
+        align-items: center;   
+        justify-content: center;    
+        gap: 10px;   
+        position: relative;        
+        padding: 2vh 12vh;
+    }
+
+
+    /* БЛОК c таймером в игре отвечает за стили текста */
+    #timer-display {
+        /*font-size: 5vh;
+        font-weight: 900;*/
+        color: #3498db;
+        margin-left: 10px;
+    }
+  
+    /* БЛОК с кнопкой домой в игре размер и позичия */
+    #home-btn {
+        position: absolute;
+        left: 0;
+        width: 10vh;
+        height: 10vh;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    
+    /* БЛОК с кнопкой домой в игре эффект нажатия */
+    #home-btn:active { transform: scale(0.9); }
+
+    
+    
+    button {
+        /* Используем vmin для всего, чтобы кнопка сохраняла пропорции */
+        padding: 5vmin 10vmin; /* отвечает за размер кнопок */
+        font-size: clamp(18px, 4vmin, 40px);
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+        border: 0.6vmin solid #e74c3c;
+        border-radius: 2vmin;
+        box-shadow: 0 1vmin 0 #c0392b;
+    
+        /* Ограничители, чтобы на огромных мониторах кнопка не стала гигантской */
+        max-width: 200px;
+        max-height: 70px;
+
+        cursor: pointer;
+        background-color: #3498db;
+        color: #f1c40f;
+        text-transform: uppercase;
+        transition: transform 0.1s ease;
+    }
+
+    button:active {
+        /* Эффект нажатия тоже через vmin */
+        transform: translateY(0.5vmin);
+        box-shadow: 0 0.4vmin 0 #c0392b;
+    } 
+
+}
+
+/* ПК РЕЖИМ (Computer) */
+@media (orientation: landscape) and (min-height: 451px) {
+     
+    .title-container {
+        display: flex !important;
+        flex-direction: column !important;  
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 20px;
+         
+    }
+
+    #game-container { 
+        display: flex;
+        flex-direction: column;  
+        justify-content: center;   
+        align-items: center;       
+        min-height: 100vh;         
+        width: 100vw;
+    }
+
+    #game-conteiner_2 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .game-title-memory, .game-title-master {
+        font-size: clamp(20px, 10vmin, 120px);
+        display: block; 
+    }
+
+     
+    .game-title-memory { 
+        text-align: center; 
+        color: #f1c40f; 
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);          
+    }
+
+    .game-title-master { 
+        text-align: center; 
+        color: #3498db;
+        text-shadow:    
+            0 0.2vmin 0 #2980b9,
+            0 0.1vmin 0 #1a5276,
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+    }
+
+     /* Внутри моштабируем */
+    #main-menu-overlay img {
+        width: 10vh !important; 
+        height: 10vh !important;
+    }
+
+
+     
+    #level-info {
+        display: none;
+        font-size: clamp(18px, 4vh, 28px);
+        font-weight: 900;
+        color: #3498db;
+        background: rgba(255, 255, 255, 0.9);
+        border: 3px solid #e74c3c;
+        border-radius: 12px;
+        padding: 5px 20px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    #menu-wrapper {
+        display: none;
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid #e74c3c;
+        border-radius: 10px;
+        padding: 5px 15px;
+        margin-bottom: 5px;
+    }
+
+    .timer-container {   
+        display: flex;   
+        align-items: center;   
+        justify-content: center;    
+        gap: 15px;    
+        position: relative;        
+        padding: 5px 40px; 
+    }
+
+    #home-btn {
+        position: absolute;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+     
+    #home-btn:active { transform: scale(0.9); }
+
+    #timer-display {
+        font-size: clamp(20px, 4vh, 32px);
+        font-weight: 900;
+        color: #3498db;
+        margin-left: 10px;
+    }
+
+
+    button {
+        /* Используем vmin для всего, чтобы кнопка сохраняла пропорции */
+        padding: 4vmin 6vmin; 
+        font-size: clamp(18px, 4vmin, 40px);
+        text-shadow: 
+            0 0.2vmin 0 #c7a30c, 
+            0 0.1vmin 0 #9e810a, 
+            0 0.1vmin 0.5vmin rgba(0,0,0,0.5);
+    
+        border: 0.6vmin solid #e74c3c;
+        border-radius: 2vmin;
+        box-shadow: 0 1vmin 0 #c0392b;
+    
+        /* Ограничители, чтобы на огромных мониторах кнопка не стала гигантской */
+        max-width: 400px;
+        max-height: 120px;
+
+        min-width: 200px;
+        min-height: 70px;
+
+        cursor: pointer;
+        background-color: #3498db;
+        color: #f1c40f;
+        text-transform: uppercase;
+        transition: transform 0.1s ease;
+    }
+
+    button:active {
+        /* Эффект нажатия тоже через vmin */
+        transform: translateY(0.5vmin);
+        box-shadow: 0 0.4vmin 0 #c0392b;
+    }    
+       
+}
+    
+
+
+
+
+ 
+
+
+  
+   
+    
+ 
+   
+
+
+
